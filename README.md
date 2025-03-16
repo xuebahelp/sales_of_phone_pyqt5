@@ -1,6 +1,19 @@
 # 手机销量数据PyQt5展示
 
 > 爬取淘宝手机商品,销量,评论等数据在PyQt5上进行展示
+> 
+> ![image](https://github.com/user-attachments/assets/bdd1bc5e-47bf-447e-bdc7-a6108d3cba3d)
+> 
+> ![image](https://github.com/user-attachments/assets/567bffc9-372c-44ab-becd-607306403c4c)
+>
+> ![image](https://github.com/user-attachments/assets/48a7d5a7-7c15-46d3-8ce4-461b5f6f0c96)
+>
+> ![image](https://github.com/user-attachments/assets/39209533-b660-4d36-af76-72c81dab295e)
+>
+> ![image](https://github.com/user-attachments/assets/19de30e1-3f4a-4b09-831b-e03a5b01fbbe)
+
+
+
 
 ---
 
