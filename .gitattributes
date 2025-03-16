@@ -1,1 +1,3 @@
 *.py linguist-detectable=true
+test.html linguist-documentation
+assets/* linguist-vendored
