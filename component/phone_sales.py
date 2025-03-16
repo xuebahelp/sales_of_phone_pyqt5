@@ -92,15 +92,24 @@ class PhoneSalesManager(QWidget):
         searchLayout = QHBoxLayout()
         self.searchInput = QLineEdit(self)
         self.searchInput.setPlaceholderText("输入标题搜索")
+        self.brandInput = QLineEdit(self)  # 新增品牌输入框
+        self.brandInput.setPlaceholderText("输入品牌搜索")
+        self.minPriceInput = QLineEdit(self)  # 新增最小价格输入框
+        self.minPriceInput.setPlaceholderText("最小价格")
+        self.maxPriceInput = QLineEdit(self)  # 新增最大价格输入框
+        self.maxPriceInput.setPlaceholderText("最大价格")
         searchButton = QPushButton("搜索", self)
         searchButton.clicked.connect(self.searchData)
         searchLayout.addWidget(self.searchInput)
+        searchLayout.addWidget(self.brandInput)  # 添加品牌输入框
+        searchLayout.addWidget(self.minPriceInput)  # 添加最小价格输入框
+        searchLayout.addWidget(self.maxPriceInput)  # 添加最大价格输入框
         searchLayout.addWidget(searchButton)
         layout.addLayout(searchLayout)
 
         # 表格
         self.table = QTableWidget(self)
-        self.table.setColumnCount(10)  # 增加一列
+        self.table.setColumnCount(10)
         self.table.setHorizontalHeaderLabels(
             ["图片地址", "标题", "品牌", "价格", "销量_文本", "销量", "店铺名称", "评论数_字符", "评论数", "评分"]
         )
@@ -113,29 +122,27 @@ class PhoneSalesManager(QWidget):
             self.addButton = QPushButton("添加", self)
             self.deleteButton = QPushButton("删除", self)
             self.updateButton = QPushButton("修改", self)
-            self.detailButton = QPushButton("查看详情", self)  # 新增查看详情按钮
-            self.exportButton = QPushButton("导出为 Excel", self)  # 导出按钮
+            self.detailButton = QPushButton("查看详情", self)
+            self.exportButton = QPushButton("导出为 Excel", self)
             self.buttonLayout.addWidget(self.addButton)
             self.buttonLayout.addWidget(self.deleteButton)
             self.buttonLayout.addWidget(self.updateButton)
-            self.buttonLayout.addWidget(self.detailButton)  # 添加查看详情按钮
-            self.buttonLayout.addWidget(self.exportButton)  # 导出按钮对所有用户可见
-            # 连接按钮事件
+            self.buttonLayout.addWidget(self.detailButton)
+            self.buttonLayout.addWidget(self.exportButton)
             self.addButton.clicked.connect(self.addData)
             self.deleteButton.clicked.connect(self.deleteData)
             self.updateButton.clicked.connect(self.updateData)
-            # self.detailButton.clicked.connect(self.showDetail)  # 连接查看详情按钮事件
         else:
             self.buttonLayout = QHBoxLayout()
-            self.detailButton = QPushButton("查看详情", self)  # 新增查看详情按钮
-            self.exportButton = QPushButton("导出为 Excel", self)  # 导出按钮
-            self.buttonLayout.addWidget(self.detailButton)  # 添加查看详情按钮
-            self.buttonLayout.addWidget(self.exportButton)  # 导出按钮对所有用户可见
+            self.detailButton = QPushButton("查看详情", self)
+            self.exportButton = QPushButton("导出为 Excel", self)
+            self.buttonLayout.addWidget(self.detailButton)
+            self.buttonLayout.addWidget(self.exportButton)
 
         layout.addLayout(self.buttonLayout)
         self.setLayout(layout)
-        self.detailButton.clicked.connect(self.showDetail)  # 连接查看详情按钮事件
-        self.exportButton.clicked.connect(self.exportToExcel)  # 导出按钮事件
+        self.detailButton.clicked.connect(self.showDetail)
+        self.exportButton.clicked.connect(self.exportToExcel)
 
     def connectDB(self):
         """连接 SQLite 数据库"""
@@ -177,16 +184,41 @@ class PhoneSalesManager(QWidget):
             QMessageBox.critical(self, "错误", f"加载数据失败: {e}")
 
     def searchData(self):
-        """条件搜索"""
+        """条件搜索：按标题、品牌、价格区间搜索"""
+        # 获取搜索条件
         title = self.searchInput.text().strip()
-        if not title:
+        brand = self.brandInput.text().strip()
+        min_price = self.minPriceInput.text().strip()  # 最小价格
+        max_price = self.maxPriceInput.text().strip()  # 最大价格
+
+        # 如果没有输入任何条件，则加载全部数据
+        if not title and not brand and not min_price and not max_price:
             self.loadData()
             return
 
         try:
-            self.cursor.execute("SELECT * FROM phone_sales WHERE title LIKE ?", (f"%{title}%",))
+            # 动态构建 SQL 查询
+            query = "SELECT * FROM phone_sales WHERE 1=1"
+            params = []
+
+            if title:
+                query += " AND title LIKE ?"
+                params.append(f"%{title}%")
+            if brand:
+                query += " AND brand LIKE ?"
+                params.append(f"%{brand}%")
+            if min_price:
+                query += " AND CAST(price AS REAL) >= ?"
+                params.append(float(min_price))
+            if max_price:
+                query += " AND CAST(price AS REAL) <= ?"
+                params.append(float(max_price))
+
+            # 执行查询
+            self.cursor.execute(query, params)
             phones = self.cursor.fetchall()
 
+            # 更新表格数据
             self.table.setRowCount(0)
             for row, phone in enumerate(phones):
                 self.table.insertRow(row)
