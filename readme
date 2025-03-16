@@ -1,4 +1,0 @@
-0 默认chrome浏览器路径为C:\Users\PC\AppData\Local\Google\Chrome\Application
-1 chrome.exe 复制一份重命名为chrome9220.exe
-2 启动监控端口的chrome浏览器
-chrome9220.exe --remote-debugging-port=9220 --user-data-dir="./9220"
