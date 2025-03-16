@@ -137,16 +137,33 @@ class CorrelationScatterTab(QWidget):
             cursor.execute("SELECT star, comments_count FROM phone_sales")
             data = cursor.fetchall()
 
-            # 提取评分和评论数
-            stars = [item[0] for item in data]  # 评分
-            comments = [item[1] for item in data]  # 评论数
+            # 提取评分和评论数，并将评论数转换为数字（异常值替换为0）
+            stars = []
+            comments = []
+            for item in data:
+                star = item[0]  # 评分
+                try:
+                    # 尝试将评论数转换为整数，失败则替换为0
+                    comment = int(item[1]) if item[1] else 0
+                except (ValueError, TypeError):
+                    comment = 0  # 如果转换失败，替换为0
+                stars.append(star)
+                comments.append(comment)
+
+            # 将评分和评论数组合成元组列表，并按评论数排序
+            combined = list(zip(stars, comments))
+            combined.sort(key=lambda x: x[1])  # 按评论数排序
+
+            # 分离排序后的评分和评论数
+            sorted_stars = [item[0] for item in combined]
+            sorted_comments = [item[1] for item in combined]
 
             # 绘制散点图
             self.ax.clear()
-            self.ax.scatter(stars, comments, color="red")
+            self.ax.scatter(sorted_stars, sorted_comments, color="red")
             self.ax.set_xlabel("评分")
             self.ax.set_ylabel("评论数")
-            self.ax.set_title("评分与评论数相关性分析")
+            self.ax.set_title("评分与评论数相关性分析（评论数有序排列）")
             self.canvas.draw()
 
             connection.close()
